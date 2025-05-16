@@ -1,0 +1,260 @@
+/* General Layout and Profile Page Styles */
+.page-container {
+  padding: 40px;
+  background: #1c1c1c;
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  color: #fff;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.page-card {
+  background-color: #2a2a2a;
+  padding: 30px 40px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+  text-align: center;
+  max-width: 600px;
+}
+
+.page-card h1 {
+  color: #ff1f4b;
+  font-size: 28px;
+}
+
+.page-card p {
+  font-size: 16px;
+  color: #ccc;
+}
+
+button {
+  background-color: #ff1f4b;
+  color: #fff;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+button:hover {
+  background-color: #e91e63;
+}
+
+/* Profile Message */
+.profile-message {
+  font-size: 1.1rem;
+  font-style: italic;
+  color: #bbb;
+}
+
+.profile-message span {
+  font-weight: bold;
+}
+
+/* Overlay and Form */
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.overlay-content {
+  background-color: #2a2a2a;
+  padding: 20px;
+  border-radius: 12px;
+  width: 80%;
+  max-width: 600px;
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.2);
+  overflow-y: auto;
+  max-height: 80%;
+  color: #fff;
+}
+
+.overlay-content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 20px;
+  color: #ff1f4b;
+}
+
+.overlay-content form {
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-content label {
+  font-size: 1rem;
+  margin-bottom: 5px;
+  color: #fff;
+}
+
+.overlay-content input,
+.overlay-content select {
+  padding: 10px;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  border: 1px solid #555;
+  background-color: #333;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.overlay-content select[multiple] {
+  height: 150px;
+  overflow-y: auto;
+}
+
+.overlay-actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 20px;
+}
+
+.overlay-actions button {
+  background-color: #ff1f4b;
+}
+
+.overlay-actions button:nth-child(2) {
+  background-color: #dc3545;
+}
+
+.overlay-actions button:hover {
+  background-color: #e91e63;
+}
+
+.overlay-actions button:nth-child(2):hover {
+  background-color: #c82333;
+}
+
+/* Multi-select */
+.multi-select-checkboxes {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.multi-select-checkboxes label {
+  display: flex;
+  align-items: center;
+  font-size: 1rem;
+  color: #fff;
+}
+
+.multi-select-checkboxes input {
+  margin-right: 10px;
+  accent-color: #ff1f4b;
+  cursor: pointer;
+}
+
+.page-card.wide {
+  max-width: 800px;
+  width: 100%;
+  padding: 40px;
+}
+
+.input-group {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 20px;
+  text-align: left;
+}
+
+.input-group label {
+  margin-bottom: 5px;
+  color: #ccc;
+}
+
+.input-group input {
+  padding: 10px;
+  border-radius: 6px;
+  background-color: #333;
+  border: 1px solid #555;
+  color: #fff;
+}
+
+/* Spinner Loader */
+.spinner-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 30px;
+}
+
+.loader {
+  border: 6px solid #333;
+  border-top: 6px solid #ff1f4b;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .page-card {
+    width: 90%;
+  }
+
+  .overlay-content {
+    width: 95%;
+  }
+
+  .overlay-content form {
+    margin-top: 10px;
+  }
+}
+
+.feedback-form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+.feedback-form textarea {
+  resize: vertical;
+  border-radius: 6px;
+  padding: 10px;
+  background-color: #333;
+  color: #fff;
+  border: 1px solid #555;
+  font-size: 1rem;
+}
+
+.save-success-popout {
+  margin-top: 20px;
+  background-color: #28a745;
+  color: #fff;
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-weight: bold;
+  text-align: center;
+  animation: fadeSlide 0.3s ease-out;
+}
+
+@keyframes fadeSlide {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
