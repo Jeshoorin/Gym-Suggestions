@@ -1,46 +1,67 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/PageStyles.css';
+
+const STORAGE_KEY = 'feedbackData';
 
 const Feedback = () => {
   const location = useLocation();
   const workoutExercises = location.state?.exercises || [];
 
-  const [feedbackData, setFeedbackData] = useState(
-    workoutExercises.map((name) => ({
-      name,
-      painLevel: '',
-      intensity: '',
-      sets: '',
-      reps: '',
-      weight: '',
-      bloating: '',
-      notes: '',
-    }))
-  );
+  // Initialize feedbackData from localStorage or workoutExercises names
+  const [feedbackData, setFeedbackData] = useState(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        // If parse error fallback to workoutExercises
+      }
+    }
+    // Map exercise objects (if passed) or strings to feedback objects
+    return workoutExercises.map(ex => {
+      // ex could be string or object, handle both
+      const name = typeof ex === 'string' ? ex : ex.name || 'Exercise';
+      return {
+        name,
+        painLevel: '',
+        intensity: '',
+        sets: '',
+        reps: '',
+        weight: '',
+        bloating: '',
+        notes: '',
+      };
+    });
+  });
 
   const [showSuccess, setShowSuccess] = useState(false);
 
   const handleChange = (index, e) => {
     const { name, value } = e.target;
-    const updated = [...feedbackData];
-    updated[index][name] = value;
-    setFeedbackData(updated);
+    setFeedbackData(prev =>
+      prev.map((item, idx) => (idx === index ? { ...item, [name]: value } : item))
+    );
   };
+
+  // Persist feedbackData on change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(feedbackData));
+  }, [feedbackData]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
-
-    // Send feedbackData to backend here
     setShowSuccess(true);
     setTimeout(() => setShowSuccess(false), 3000);
+    // optionally clear localStorage here
+    // localStorage.removeItem(STORAGE_KEY);
   };
 
   return (
     <div className="page-container">
       <div className="page-card wide">
         <h1>Today's Workout Feedback</h1>
-        {workoutExercises.length === 0 ? (
+        {feedbackData.length === 0 ? (
           <p>No exercises found for today. Please complete a workout first.</p>
         ) : (
           <form onSubmit={handleSubmit} className="feedback-form">
