@@ -1,73 +1,136 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import '../styles/PageStyles.css';
+import '../styles/diet-meal-styles.css';
 
 const STORAGE_KEY = 'feedbackData';
 
 const Feedback = () => {
   const location = useLocation();
-  const workoutExercises = location.state?.exercises || [];
+  console.log("Feedback page location state:", location.state);
 
-  // Initialize feedbackData from localStorage or workoutExercises names
+  const workoutExercises = location.state?.exercises || [];
+  console.log("Workout exercises:", workoutExercises);
+
+  const getInitialFeedbackData = () =>
+    workoutExercises.length > 0
+      ? workoutExercises.map((exercise) => ({
+          name: exercise.name,
+          reps: exercise.reps,
+          weight: exercise.weight,
+          sets: '',
+          painLevel: '',
+          intensity: '',
+        }))
+      : [];
+
   const [feedbackData, setFeedbackData] = useState(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        return JSON.parse(saved);
-      } catch {
-        // If parse error fallback to workoutExercises
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.feedbackData) {
+          console.log('Loaded feedbackData from localStorage:', parsed.feedbackData);
+          return parsed.feedbackData;
+        }
       }
+    } catch (error) {
+      console.warn('Failed to parse localStorage data:', error);
     }
-    // Map exercise objects (if passed) or strings to feedback objects
-    return workoutExercises.map(ex => {
-      // ex could be string or object, handle both
-      const name = typeof ex === 'string' ? ex : ex.name || 'Exercise';
-      return {
-        name,
-        painLevel: '',
-        intensity: '',
-        sets: '',
-        reps: '',
-        weight: '',
-        bloating: '',
-        notes: '',
-      };
-    });
+    const initialData = getInitialFeedbackData();
+    console.log('Initialized feedbackData:', initialData);
+    return initialData;
   });
 
+  const [overallFeedback, setOverallFeedback] = useState(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        const parsed = JSON.parse(saved);
+        if (parsed.overallFeedback) {
+          console.log('Loaded overallFeedback from localStorage:', parsed.overallFeedback);
+          return parsed.overallFeedback;
+        }
+      }
+    } catch (error) {
+      console.warn('Failed to parse overallFeedback:', error);
+    }
+    return { bloating: '', notes: '' };
+  });
+
+  const [currentSlide, setCurrentSlide] = useState(0);
   const [showSuccess, setShowSuccess] = useState(false);
+
+  // Save to localStorage whenever feedbackData or overallFeedback changes
+  useEffect(() => {
+    console.log('Saving feedbackData and overallFeedback to localStorage...');
+    const dataToSave = { feedbackData, overallFeedback };
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(dataToSave));
+  }, [feedbackData, overallFeedback]);
 
   const handleChange = (index, e) => {
     const { name, value } = e.target;
-    setFeedbackData(prev =>
-      prev.map((item, idx) => (idx === index ? { ...item, [name]: value } : item))
-    );
+    setFeedbackData((prev) => {
+      const updated = [...prev];
+      updated[index] = { ...updated[index], [name]: value };
+      return updated;
+    });
   };
 
-  // Persist feedbackData on change
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(feedbackData));
-  }, [feedbackData]);
+  const handleOverallFeedbackChange = (e) => {
+    const { name, value } = e.target;
+    setOverallFeedback((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
     setShowSuccess(true);
+
+    // Clear localStorage immediately
+    localStorage.removeItem(STORAGE_KEY);
+
+    // Reset states explicitly to initial empty values
+    setFeedbackData(getInitialFeedbackData());
+    setOverallFeedback({ bloating: '', notes: '' });
+    setCurrentSlide(0);
+
     setTimeout(() => setShowSuccess(false), 3000);
-    // optionally clear localStorage here
-    // localStorage.removeItem(STORAGE_KEY);
   };
+
+  const goNext = () => {
+    if (currentSlide < feedbackData.length) {
+      setCurrentSlide((prev) => prev + 1);
+    }
+  };
+
+  const goBack = () => {
+    if (currentSlide > 0) {
+      setCurrentSlide((prev) => prev - 1);
+    }
+  };
+
+  const isFinalSlide = currentSlide === feedbackData.length;
+
+  const currentFeedback = feedbackData[currentSlide];
 
   return (
     <div className="page-container">
       <div className="page-card wide">
-        <h1>Today's Workout Feedback</h1>
+        <h1>Workout Feedback</h1>
         {feedbackData.length === 0 ? (
-          <p>No exercises found for today. Please complete a workout first.</p>
+          <p>No exercises found. Please complete a workout first.</p>
         ) : (
           <form onSubmit={handleSubmit} className="feedback-form">
-            {feedbackData.map((exercise, idx) => (
-              <div key={idx} className="exercise-section">
-                <h3>{exercise.name}</h3>
+            {!isFinalSlide && currentFeedback ? (
+              <>
+                <h2>{currentFeedback.name}</h2>
+                <p>
+                  {currentFeedback.reps} reps × {currentFeedback.weight} kg
+                </p>
 
                 <div className="input-group">
                   <label>Pain Level (1-10)</label>
@@ -76,8 +139,8 @@ const Feedback = () => {
                     name="painLevel"
                     min="1"
                     max="10"
-                    value={exercise.painLevel}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={currentFeedback.painLevel}
+                    onChange={(e) => handleChange(currentSlide, e)}
                   />
                 </div>
 
@@ -85,8 +148,8 @@ const Feedback = () => {
                   <label>Intensity</label>
                   <select
                     name="intensity"
-                    value={exercise.intensity}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={currentFeedback.intensity}
+                    onChange={(e) => handleChange(currentSlide, e)}
                   >
                     <option value="">Select</option>
                     <option value="Low">Low</option>
@@ -100,37 +163,40 @@ const Feedback = () => {
                   <input
                     type="number"
                     name="sets"
-                    value={exercise.sets}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={currentFeedback.sets}
+                    onChange={(e) => handleChange(currentSlide, e)}
                   />
                 </div>
 
                 <div className="input-group">
-                  <label>Reps</label>
+                  <label>Reps Completed</label>
                   <input
                     type="number"
                     name="reps"
-                    value={exercise.reps}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={currentFeedback.reps}
+                    onChange={(e) => handleChange(currentSlide, e)}
                   />
                 </div>
 
                 <div className="input-group">
-                  <label>Weight (kg)</label>
+                  <label>Weight Used (kg)</label>
                   <input
                     type="number"
                     name="weight"
-                    value={exercise.weight}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={currentFeedback.weight}
+                    onChange={(e) => handleChange(currentSlide, e)}
                   />
                 </div>
-
+              </>
+            ) : (
+              <>
+                <h2>Overall Feedback</h2>
                 <div className="input-group">
                   <label>Bloating</label>
                   <select
                     name="bloating"
-                    value={exercise.bloating}
-                    onChange={(e) => handleChange(idx, e)}
+                    value={overallFeedback.bloating}
+                    onChange={handleOverallFeedbackChange}
                   >
                     <option value="">Select</option>
                     <option value="None">None</option>
@@ -143,20 +209,58 @@ const Feedback = () => {
                   <label>Notes</label>
                   <textarea
                     name="notes"
-                    rows="2"
-                    value={exercise.notes}
-                    onChange={(e) => handleChange(idx, e)}
-                    placeholder="Any extra comments..."
+                    rows="3"
+                    value={overallFeedback.notes}
+                    onChange={handleOverallFeedbackChange}
+                    placeholder="Any overall comments..."
                   />
                 </div>
-                <hr />
-              </div>
-            ))}
+              </>
+            )}
 
-            <button type="submit">Save Feedback</button>
+            <div
+              className="button-row"
+              style={{
+                display: 'flex',
+                justifyContent: 'space-between',
+                marginTop: '1.5rem',
+              }}
+            >
+              {currentSlide > 0 ? (
+                <button type="button" onClick={goBack} style={{ minWidth: '100px' }}>
+                  ← Back
+                </button>
+              ) : (
+                <div style={{ minWidth: '100px' }} />
+              )}
+
+              {!isFinalSlide ? (
+                <button type="button" onClick={goNext} style={{ minWidth: '100px' }}>
+                  Next →
+                </button>
+              ) : (
+                <button type="submit" style={{ minWidth: '150px' }}>
+                  ✅ Submit Feedback
+                </button>
+              )}
+            </div>
 
             {showSuccess && (
-              <div className="save-success-popout">✅ Feedback saved successfully!</div>
+              <div
+                className="save-success-popout"
+                style={{
+                  marginTop: '1rem',
+                  padding: '10px',
+                  backgroundColor: '#d4edda',
+                  border: '1px solid #c3e6cb',
+                  borderRadius: '4px',
+                  color: '#155724',
+                  textAlign: 'center',
+                  fontWeight: 'bold',
+                }}
+              >
+                ✅ Feedback saved and reset successfully!
+              </div>
             )}
           </form>
         )}
