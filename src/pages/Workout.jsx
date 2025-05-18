@@ -8,13 +8,15 @@ const getRandomReps = () => Math.floor(Math.random() * 5 + 8); // 8–12 reps
 const getRandomWeight = () => Math.floor(Math.random() * 20 + 20); // 20–40 kg
 
 const pickRandomExercises = (exercises) => {
-  const shuffled = exercises.sort(() => 0.5 - Math.random());
+  const shuffled = [...exercises].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, 3).map((name) => ({
     name,
     reps: getRandomReps(),
     weight: getRandomWeight(),
   }));
 };
+
+const EXERCISE_KEY = "workoutExercises";
 
 const Workout = () => {
   const { profile } = useAuth();
@@ -37,10 +39,16 @@ const Workout = () => {
   };
 
   const [sessionExercises, setSessionExercises] = useState(() => {
+    const prev = sessionStorage.getItem(EXERCISE_KEY);
+    if (prev) return JSON.parse(prev);
+
     const randomized = {};
     for (let key in workoutPlan) {
       randomized[key] = pickRandomExercises(workoutPlan[key].exercises);
     }
+
+    sessionStorage.setItem(EXERCISE_KEY, JSON.stringify(randomized));
+
     return randomized;
   });
 
@@ -49,8 +57,17 @@ const Workout = () => {
   };
 
   const handleMarkAsDone = (key) => {
-    const exercises = sessionExercises[key];
-    navigate("/feedback", { state: { exercises } });
+    // Get current stored exercises or empty object
+    const prev = sessionStorage.getItem(EXERCISE_KEY);
+    const oldExercises = prev ? JSON.parse(prev) : {};
+
+    // Replace the current key's exercises instead of appending
+    const updated = { ...oldExercises, [key]: sessionExercises[key] };
+
+    sessionStorage.setItem(EXERCISE_KEY, JSON.stringify(updated));
+
+    // Pass only current section exercises to Feedback
+    navigate("/feedback", { state: { exercises: sessionExercises[key] } });
   };
 
   return (

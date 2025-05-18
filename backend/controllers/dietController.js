@@ -2,7 +2,9 @@ const fs = require("fs");
 const readline = require("readline");
 const { appendCSV } = require("../utils/csvUtils");
 
-const dietCSV = require("path").join(__dirname, "../ml_model/data/diet_logs.csv");
+const path = require("path");
+const dietCSV = path.join(__dirname, "../ml_model/data/diet_logs.csv");
+
 
 exports.saveDiet = async (req, res) => {
   const {
