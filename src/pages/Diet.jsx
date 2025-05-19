@@ -9,22 +9,34 @@ function Diet() {
   const [dietData, setDietData] = useState({});
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
-  const [expanded, setExpanded] = useState(null); // control collapse
+  const [expanded, setExpanded] = useState(null);
 
   const username = user?.email || localStorage.getItem("username");
+  const storageKey = `dietData-${username}`;
 
   useEffect(() => {
     if (!username) return;
+
+    // Check if diet data exists in sessionStorage
+    const cachedData = sessionStorage.getItem(storageKey);
+    if (cachedData) {
+      setDietData(JSON.parse(cachedData));
+      setLoading(false);
+      return;
+    }
+
+    // Fetch diet data from backend
     axios
       .post("http://localhost:5000/api/get-diet", { username })
       .then((res) => {
         setDietData(res.data);
+        sessionStorage.setItem(storageKey, JSON.stringify(res.data)); // Cache in sessionStorage
       })
       .catch((err) => {
         console.error("Error fetching diet:", err);
       })
       .finally(() => setLoading(false));
-  }, [username]);
+  }, [username, storageKey]);
 
   const handleSave = async (mealType) => {
     if (!profile?.weight_kg) return alert("Please update your weight in profile.");
@@ -59,12 +71,11 @@ function Diet() {
     setExpanded(expanded === mealType ? null : mealType);
   };
 
-  // Targets for macros
   const targets = {
     calories: 2000,
-    protein: 180,  // grams
-    carbs: 300,   // grams
-    fat: 70,      // grams
+    protein: 180,
+    carbs: 300,
+    fat: 70,
   };
 
   return (
@@ -84,9 +95,7 @@ function Diet() {
               const macros = meal?.macros;
               if (!meal) return null;
 
-              const progress = (value, target) => {
-                return (value / target) * 100; // Calculates the percentage of the target
-              };
+              const progress = (value, target) => (value / target) * 100;
 
               return (
                 <div key={mealType} className="diet-meal-card collapsible">
@@ -111,31 +120,19 @@ function Diet() {
                           <>
                             <div className="macro-bar">
                               <label>Calories: {macros.calories?.toFixed(2)}</label>
-                              <progress
-                                value={progress(macros.calories, targets.calories)}
-                                max={100}
-                              ></progress>
+                              <progress value={progress(macros.calories, targets.calories)} max={100}></progress>
                             </div>
                             <div className="macro-bar">
                               <label>Protein: {macros.protein?.toFixed(2)}g</label>
-                              <progress
-                                value={progress(macros.protein, targets.protein)}
-                                max={100}
-                              ></progress>
+                              <progress value={progress(macros.protein, targets.protein)} max={100}></progress>
                             </div>
                             <div className="macro-bar">
                               <label>Carbs: {macros.carbs?.toFixed(2)}g</label>
-                              <progress
-                                value={progress(macros.carbs, targets.carbs)}
-                                max={100}
-                              ></progress>
+                              <progress value={progress(macros.carbs, targets.carbs)} max={100}></progress>
                             </div>
                             <div className="macro-bar">
                               <label>Fat: {macros.fat?.toFixed(2)}g</label>
-                              <progress
-                                value={progress(macros.fat, targets.fat)}
-                                max={100}
-                              ></progress>
+                              <progress value={progress(macros.fat, targets.fat)} max={100}></progress>
                             </div>
                           </>
                         ) : (

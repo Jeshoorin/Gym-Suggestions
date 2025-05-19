@@ -1,72 +1,80 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/PageStyles.css";
 import "../styles/diet-meal-styles.css";
 import { useAuth } from "../AuthContext";
-
-const getRandomReps = () => Math.floor(Math.random() * 5 + 8); // 8–12 reps
-const getRandomWeight = () => Math.floor(Math.random() * 20 + 20); // 20–40 kg
-
-const pickRandomExercises = (exercises) => {
-  const shuffled = [...exercises].sort(() => 0.5 - Math.random());
-  return shuffled.slice(0, 3).map((name) => ({
-    name,
-    reps: getRandomReps(),
-    weight: getRandomWeight(),
-  }));
-};
-
-const EXERCISE_KEY = "workoutExercises";
+import axios from "axios";
 
 const Workout = () => {
   const { profile } = useAuth();
   const [expanded, setExpanded] = useState(null);
+  const [sessionExercises, setSessionExercises] = useState({});
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  const workoutPlan = {
-    upper: {
-      title: "Upper Body",
-      exercises: ["Push-ups", "Pull-ups", "Bench Press", "Shoulder Press", "Bicep Curls"],
-    },
-    lower: {
-      title: "Lower Body",
-      exercises: ["Squats", "Lunges", "Deadlifts", "Calf Raises"],
-    },
-    core: {
-      title: "Core",
-      exercises: ["Planks", "Crunches", "Leg Raises", "Russian Twists"],
-    },
+  const EXERCISE_KEY = "workoutExercises";
+
+  // Map internal keys to friendly display names
+  const displayNameMap = {
+    upper: "Upper Body",
+    lower: "Lower Body",
+    core: "Core",
   };
 
-  const [sessionExercises, setSessionExercises] = useState(() => {
-    const prev = sessionStorage.getItem(EXERCISE_KEY);
-    if (prev) return JSON.parse(prev);
+  useEffect(() => {
+    const fetchWorkout = async () => {
+      try {
+        const username = profile?.username || "egarcia";
 
-    const randomized = {};
-    for (let key in workoutPlan) {
-      randomized[key] = pickRandomExercises(workoutPlan[key].exercises);
+        const response = await axios.post("http://localhost:5000/api/get-workout", { username });
+
+        const data = response.data;
+
+        console.log("Fetched workout data:", data);
+
+        // Group by type lowercase
+        const grouped = data.reduce((acc, exercise) => {
+          const type = exercise.type.toLowerCase();
+          if (!acc[type]) acc[type] = [];
+          acc[type].push(exercise);
+          return acc;
+        }, {});
+
+        console.log("Grouped workout keys:", Object.keys(grouped));
+
+        setSessionExercises(grouped);
+        sessionStorage.setItem(EXERCISE_KEY, JSON.stringify(grouped));
+      } catch (error) {
+        console.error("❌ Failed to fetch workout:", error.message);
+        if (error.code === "ERR_NETWORK") {
+          console.error("💡 Tip: Is your backend running on port 5000 and accessible?");
+        } else if (error.response) {
+          console.error("💥 Backend responded with error:", error.response.data);
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    const cached = sessionStorage.getItem(EXERCISE_KEY);
+    if (cached) {
+      setSessionExercises(JSON.parse(cached));
+      setLoading(false);
+    } else {
+      fetchWorkout();
     }
-
-    sessionStorage.setItem(EXERCISE_KEY, JSON.stringify(randomized));
-
-    return randomized;
-  });
+  }, [profile]);
 
   const toggleExpand = (type) => {
     setExpanded(expanded === type ? null : type);
   };
 
   const handleMarkAsDone = (key) => {
-    // Get current stored exercises or empty object
     const prev = sessionStorage.getItem(EXERCISE_KEY);
     const oldExercises = prev ? JSON.parse(prev) : {};
-
-    // Replace the current key's exercises instead of appending
     const updated = { ...oldExercises, [key]: sessionExercises[key] };
-
     sessionStorage.setItem(EXERCISE_KEY, JSON.stringify(updated));
 
-    // Pass only current section exercises to Feedback
     navigate("/feedback", { state: { exercises: sessionExercises[key] } });
   };
 
@@ -76,31 +84,38 @@ const Workout = () => {
         <h1>Workout Plan</h1>
         <p>Here’s where your customized training lives. Push your limits and stay consistent!</p>
 
-        <div className="diet-flex-row">
-          {Object.entries(workoutPlan).map(([key, section]) => (
-            <div key={key} className="diet-meal-card collapsible">
-              <h2 onClick={() => toggleExpand(key)} style={{ cursor: "pointer" }}>
-                {section.title}
-              </h2>
+        {loading ? (
+          <div className="spinner-container">
+            <div className="loader"></div>
+          </div>
+        ) : (
+          <div className="diet-flex-row">
+            {Object.entries(sessionExercises).map(([key, exercises]) => (
+              <div key={key} className="diet-meal-card collapsible">
+                <h2 onClick={() => toggleExpand(key)} style={{ cursor: "pointer" }}>
+                  {displayNameMap[key] || key.charAt(0).toUpperCase() + key.slice(1)} 
+                </h2>
 
-              {expanded === key && (
-                <>
-                  <strong>Exercises:</strong>
-                  <ul className="food-list">
-                    {sessionExercises[key].map((exercise, idx) => (
-                      <li key={idx}>
-                        {exercise.name} — {exercise.reps} reps × {exercise.weight} kg
-                      </li>
-                    ))}
-                  </ul>
-                  <button onClick={() => handleMarkAsDone(key)}>
-                    Mark as Done & Give Feedback
-                  </button>
-                </>
-              )}
-            </div>
-          ))}
-        </div>
+                {expanded === key && (
+                  <>
+                    <strong>Exercises:</strong>
+                    <ul className="food-list">
+                      {exercises.map((exercise, idx) => (
+                        <li key={idx}>
+                          <strong>{exercise.name}</strong> — {exercise.reps} reps × {exercise.weight} kg
+                          {exercise.score !== undefined ? ` — Score: ${exercise.score}` : ""}
+                          <br />
+                          <em className="muscle-group-text">Muscle group: {exercise.muscle_group}</em>
+                        </li>
+                      ))}
+                    </ul>
+                    <button onClick={() => handleMarkAsDone(key)}>Mark as Done & Give Feedback</button>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

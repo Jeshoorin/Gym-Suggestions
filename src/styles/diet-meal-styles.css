@@ -158,3 +158,10 @@
     border-radius: 6px;
   }
   
+  .muscle-group-text {
+  font-style: italic;
+  color: #555;
+  font-size: 0.9em;
+  margin-top: 4px;
+  display: block;
+}

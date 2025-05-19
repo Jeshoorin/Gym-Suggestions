@@ -1,0 +1,84 @@
+ExerciseName,ExerciseType,TargetMuscle
+Push-Ups,Upper,Chest
+Bench Press,Upper,Chest
+Incline Bench Press,Upper,Chest
+Chest Fly,Upper,Chest
+Dips,Upper,Chest
+Pull-Ups,Upper,Back
+Chin-Ups,Upper,Back
+Bent-over Row,Upper,Back
+Lat Pulldown,Upper,Back
+Seated Cable Row,Upper,Back
+T-Bar Row,Upper,Back
+Deadlift,Upper,Back
+Deadlift,Lower,Back
+Overhead Press,Upper,Shoulders
+Lateral Raise,Upper,Shoulders
+Front Raise,Upper,Shoulders
+Arnold Press,Upper,Shoulders
+Upright Row,Upper,Shoulders
+Face Pull,Upper,Shoulders
+Bicep Curl,Upper,Biceps
+Hammer Curl,Upper,Biceps
+Concentration Curl,Upper,Biceps
+Preacher Curl,Upper,Biceps
+Cable Curl,Upper,Biceps
+Zottman Curl,Upper,Biceps
+Tricep Pushdown,Upper,Triceps
+Skull Crushers,Upper,Triceps
+Overhead Tricep Extension,Upper,Triceps
+Close-Grip Bench Press,Upper,Triceps
+Back Squat,Lower,Quads
+Front Squat,Lower,Quads
+Leg Press,Lower,Quads
+Bulgarian Split Squat,Lower,Quads
+Walking Lunge,Lower,Quads
+Step-Ups,Lower,Quads
+Romanian Deadlift,Lower,Hamstrings
+Lying Leg Curl,Lower,Hamstrings
+Glute-Ham Raise,Lower,Hamstrings
+Good Mornings,Lower,Hamstrings
+Hip Thrust,Lower,Glutes
+Glute Bridge,Lower,Glutes
+Cable Kickbacks,Lower,Glutes
+Sumo Squat,Lower,Glutes
+Standing Calf Raise,Lower,Calves
+Seated Calf Raise,Lower,Calves
+Donkey Calf Raise,Lower,Calves
+Plank,Core,Abs
+Russian Twists,Core,Obliques
+Hanging Leg Raise,Core,Abs
+Sit-Ups,Core,Abs
+Crunches,Core,Abs
+Cable Woodchopper,Core,Obliques
+Ab Wheel Rollout,Core,Abs
+Toe Touches,Core,Abs
+Clean and Press,Upper,Shoulders
+Clean and Press,Lower,Shoulders
+Clean and Press,Core,Shoulders
+Snatch,Upper,Hamstrings
+Snatch,Lower,Hamstrings
+Snatch,Core,Hamstrings
+Thrusters,Upper,Quads
+Thrusters,Lower,Quads
+Thrusters,Core,Quads
+Kettlebell Swing,Upper,Glutes
+Kettlebell Swing,Lower,Glutes
+Kettlebell Swing,Core,Glutes
+Burpees,Upper,Quads
+Burpees,Lower,Quads
+Burpees,Core,Quads
+Battle Ropes,Upper,Shoulders
+Battle Ropes,Core,Shoulders
+Running,Lower,Quads
+Running,Core,Quads
+Jump Rope,Lower,Calves
+Jump Rope,Core,Calves
+Rowing Machine,Upper,Back
+Rowing Machine,Lower,Back
+Rowing Machine,Core,Back
+Cycling,Lower,Quads
+Cycling,Core,Quads
+Swimming,Upper,Shoulders
+Swimming,Lower,Shoulders
+Swimming,Core,Shoulders

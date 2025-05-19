@@ -1,17 +1,27 @@
 const fs = require("fs");
 
 // Flexible header check/creation
-exports.ensureCSV = (path, expectedHeaders) => {
-  if (!fs.existsSync(path)) {
-    fs.writeFileSync(path, expectedHeaders.join(",") + "\n");
+exports.ensureCSV = (filePath, expectedHeaders) => {
+  if (!fs.existsSync(filePath)) {
+    fs.writeFileSync(filePath, expectedHeaders.join(",") + "\n");
+    console.log(`Created CSV at ${filePath} with headers.`);
   } else {
-    const existingHeaders = fs.readFileSync(path, "utf8").trim().split("\n")[0].split(",");
+    const content = fs.readFileSync(filePath, "utf8");
+    const lines = content.trim().split("\n");
+    const existingHeaders = lines[0].split(",");
     const missingHeaders = expectedHeaders.filter(h => !existingHeaders.includes(h));
+
     if (missingHeaders.length > 0) {
-      console.warn(`CSV at ${path} missing headers: ${missingHeaders.join(", ")}`);
+      console.warn(`CSV at ${filePath} missing headers: ${missingHeaders.join(", ")}`);
+      // Rewrite CSV with correct headers and preserve existing data (best effort)
+      const restLines = lines.slice(1);
+      // Overwrite file with correct headers + existing data (no header fix inside data lines)
+      fs.writeFileSync(filePath, expectedHeaders.join(",") + "\n" + restLines.join("\n"));
+      console.log(`CSV headers fixed at ${filePath}`);
     }
   }
 };
+
 
 exports.readCSV = (path) => {
   const data = fs.readFileSync(path, "utf8").trim().split("\n");
