@@ -23,12 +23,25 @@ exports.saveFeedback = (req, res) => {
     cholesterol_mg_dl, height_cm, weight_kg
   } = req.body;
 
-  // Basic validation
   if (!username || !date || !exercise_name || !category) {
     return res.status(400).json({ error: "Missing required fields." });
   }
 
-  // Prepare entry with rounded numbers where appropriate
+  const data = readCSV(feedbackCSV);
+
+  const alreadyExists = data.some(entry =>
+    entry.username.toLowerCase() === username.toLowerCase() &&
+    entry.date === date &&
+    entry.exercise_name.toLowerCase() === exercise_name.toLowerCase() &&
+    entry.category.toLowerCase() === category.toLowerCase()
+  );
+
+  if (alreadyExists) {
+    return res.status(409).json({
+      message: "Feedback already submitted for this exercise today."
+    });
+  }
+
   const entry = {
     username,
     date,
@@ -55,12 +68,11 @@ exports.saveFeedback = (req, res) => {
     weight_kg: Math.round(weight_kg || 0)
   };
 
-  // Optionally check for duplicates if needed (omitted for brevity)
-
   appendCSV(feedbackCSV, entry);
 
   res.status(200).json({ message: "Feedback saved successfully." });
 };
+
 
 // Get all feedback entries for a user
 exports.getFeedback = (req, res) => {

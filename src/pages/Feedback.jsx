@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../AuthContext';
 import '../styles/PageStyles.css';
 import '../styles/diet-meal-styles.css';
 
@@ -7,10 +8,10 @@ const STORAGE_KEY = 'feedbackData';
 const EXERCISE_KEY = 'workoutExercises';
 
 const Feedback = () => {
+  const { profile, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
 
-  // Ensure workoutExercises is an array safely
   const workoutExercises = (() => {
     const fromSession = sessionStorage.getItem(EXERCISE_KEY);
     if (fromSession) {
@@ -24,7 +25,6 @@ const Feedback = () => {
     return [];
   })();
 
-  // Defensive check: if not array, show error UI
   if (!Array.isArray(workoutExercises) || workoutExercises.length === 0) {
     return (
       <div className="page-container">
@@ -36,7 +36,6 @@ const Feedback = () => {
     );
   }
 
-  // Keep original workout exercises snapshot in a ref
   const originalWorkoutRef = useRef(workoutExercises.map((ex) => ({ ...ex })));
 
   const getInitialFeedbackData = () =>
@@ -102,25 +101,79 @@ const Feedback = () => {
     }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-    setShowSuccess(true);
+    try {
+      const username = user?.email || localStorage.getItem("username") || "testuser";
+      const date = new Date().toISOString().split("T")[0];
+      const gender = profile?.gender || "Male";
+      const fitness_level = profile?.fitness_level || "Intermediate";
 
-    // Clear local and session storage
-    localStorage.removeItem(STORAGE_KEY);
-    sessionStorage.removeItem(EXERCISE_KEY);
+      const userStats = {
+        bicep_cm: profile?.bicep_cm || 0,
+        chest_cm: profile?.chest_cm || 0,
+        shoulder_cm: profile?.shoulder_cm || 0,
+        lat_cm: profile?.lat_cm || 0,
+        waist_cm: profile?.waist_cm || 0,
+        abs_cm: profile?.abs_cm || 0,
+        thigh_cm: profile?.thigh_cm || 0,
+        calf_cm: profile?.calf_cm || 0,
+        blood_sugar_mg_dl: profile?.blood_sugar_mg_dl || 0,
+        cholesterol_mg_dl: profile?.cholesterol_mg_dl || 0,
+        height_cm: profile?.height_cm || 0,
+        weight_kg: profile?.weight_kg || 0,
+      };
 
-    // Reset state
-    setFeedbackData(getInitialFeedbackData());
-    setOverallFeedback({ bloating: '', notes: '' });
-    setCurrentSlide(0);
+      let savedCount = 0;
 
-    // Redirect after success message
-    setTimeout(() => {
-      setShowSuccess(false);
-      navigate('/workout');
-    }, 3000);
+      for (const feedback of feedbackData) {
+        const payload = {
+          username,
+          date,
+          exercise_name: feedback.name,
+          category: "Workout",
+          actual_reps: parseInt(feedback.actualReps) || 0,
+          actual_weight: parseInt(feedback.actualWeight) || 0,
+          number_of_sets: parseInt(feedback.sets) || 0,
+          pain_level: parseInt(feedback.painLevel) || 0,
+          intensity: feedback.intensity || "",
+          fitness_level,
+          gender,
+          ...userStats,
+        };
+
+        const res = await fetch("http://localhost:5000/api/save-feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        });
+
+        const result = await res.json();
+
+        if (res.status === 409) {
+          console.warn(`⚠️ Duplicate feedback for ${feedback.name} skipped.`);
+        } else if (!res.ok) {
+          throw new Error(result.error || result.message || "Failed to save feedback.");
+        } else {
+          savedCount++;
+        }
+      }
+
+      setShowSuccess(true);
+      localStorage.removeItem(STORAGE_KEY);
+      sessionStorage.removeItem(EXERCISE_KEY);
+      setFeedbackData(getInitialFeedbackData());
+      setOverallFeedback({ bloating: '', notes: '' });
+      setCurrentSlide(0);
+
+      setTimeout(() => {
+        setShowSuccess(false);
+        navigate("/workout");
+      }, 3000);
+    } catch (err) {
+      alert("Error submitting feedback: " + err.message);
+    }
   };
 
   const goNext = () => {
@@ -152,7 +205,7 @@ const Feedback = () => {
               </p>
 
               <div className="input-group">
-                <label>Pain Level (1-10)</label>
+                <label>Pain Level (1–10)</label>
                 <input
                   type="number"
                   name="painLevel"
@@ -237,10 +290,7 @@ const Feedback = () => {
             </>
           )}
 
-          <div
-            className="button-row"
-            style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}
-          >
+          <div className="button-row" style={{ display: 'flex', justifyContent: 'space-between', marginTop: '1.5rem' }}>
             {currentSlide > 0 ? (
               <button type="button" onClick={goBack} style={{ minWidth: '100px' }}>
                 ← Back

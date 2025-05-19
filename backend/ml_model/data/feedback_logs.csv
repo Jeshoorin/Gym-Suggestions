@@ -1,0 +1,10 @@
+username,date,exercise_name,category,actual_reps,actual_weight,number_of_sets,pain_level,intensity,fitness_level,gender,bicep_cm,chest_cm,shoulder_cm,lat_cm,waist_cm,abs_cm,thigh_cm,calf_cm,blood_sugar_mg_dl,cholesterol_mg_dl,height_cm,weight_kg
+"john_doe","2025-05-18","Bicep Curl","upperbody","12","15","3","1","7","intermediate","male","32","95","45","40","80","85","55","38","90","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Push-ups","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Shoulder Press","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Bicep Curls","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Pull-ups","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Bench Press","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Squats","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Deadlifts","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
+"jeshoorin.g@gmail.com","2025-05-19","Lunges","Workout","","","","","","beginner","male","30","85","45","35","75","75","55","35","91","170","175","70"
